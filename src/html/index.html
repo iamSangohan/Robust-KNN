@@ -106,20 +106,26 @@
                   <img src="../assets/images/logos/logo.png" width="180" alt="">
                 </a>
                 <p class="text-center">Analyser la robustesse de votre modèle KNN</p>
-                <form>
+                <form id="post">
                   <div class="mb-3">
-                    <label for="formFile" class="form-label">Entrez votre jeu de données</label>
-                    <input class="form-control" type="file" id="formFile">
+                    <div class="form-floating">
+                      <select class="form-select" id="dataset" aria-label="Floating label select example">
+                        <option selected>----------------</option>
+                        <option value="Iris">Iris</option>
+                        <option value="Digits">Digits</option>
+                      </select>
+                      <label for="floatingSelect">Entrez votre jeu de données</label>
+                    </div>
                   </div>
                   <div class="mb-4">
-                    <label for="nbDonneeTest" class="form-label">Nombre de donnée test souhaité</label>
+                    <label for="nb_input" class="form-label">Nombre de donnée test souhaité</label>
                     <input type="number" class="form-control" id="nbDonneeTest">
                   </div>
                   <div class="mb-4">
-                    <label for="seuilEmpoisonnement" class="form-label">Seuil d'empoisonnement des données</label>
+                    <label for="seuil_poisoning" class="form-label">Seuil d'empoisonnement des données</label>
                     <input type="number" class="form-control" id="seuilEmpoisonnement">
                   </div>
-                  <a href="" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Lancer l'analyse</a>
+                  <button class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2" id="valider_btn">Lancer l'analyse</button>
                 </form>
               </div>
             </div>
@@ -150,9 +156,6 @@
                         <th class="border-bottom-0">
                           <h6 class="fw-semibold mb-0">Inconnus</h6>
                         </th>
-                        <th class="border-bottom-0">
-                          <h6 class="fw-semibold mb-0">Temps</h6>
-                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -177,9 +180,6 @@
                             <span class="badge text-bg-light rounded-3 fw-semibold">0</span>
                           </div>
                         </td>
-                        <td class="border-bottom-0">
-                          <h6 class="fw-semibold mb-0 fs-4">49s</h6>
-                        </td>
                       </tr>                     
                       <tr>
                         <td class="border-bottom-0"><h6 class="fw-semibold mb-0">2</h6></td>
@@ -202,9 +202,6 @@
                             <span class="badge text-bg-light rounded-3 fw-semibold">0</span>
                           </div>
                         </td>
-                        <td class="border-bottom-0">
-                          <h6 class="fw-semibold mb-0 fs-4">120s</h6>
-                        </td>
                       </tr>                     
                     </tbody>
                   </table>
@@ -220,14 +217,132 @@
         </div>
       </div>
     </div>
+
+    <div class="modal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Modal body text goes here.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
   <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
   <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/sidebarmenu.js"></script>
   <script src="../assets/js/app.min.js"></script>
-  <script src="../assets/libs/apexcharts/dist/apexcharts.min.js"></script>
   <script src="../assets/libs/simplebar/dist/simplebar.js"></script>
-  <script src="../assets/js/dashboard.js"></script>
+  <!-- <script src="../assets/js/dashboard.js"></script> -->
+  <script>
+
+      document.addEventListener('DOMContentLoaded', (event) => {
+          // S'assurer que le DOM est entièrement chargé avant d'ajouter des gestionnaires d'événements
+          const validerBtn = document.querySelector('#valider_btn');
+          var tableaux;
+          var data;
+
+          validerBtn.addEventListener('click', function(e) {
+              e.preventDefault(); // Empêcher le comportement par défaut du formulaire
+
+              // Votre logique pour récupérer les valeurs du formulaire
+              const dataset = document.querySelector('#dataset').value;
+              const nbDonneeTest = document.querySelector('#nbDonneeTest').value;
+              const seuilEmpoisonnement = document.querySelector('#seuilEmpoisonnement').value;
+
+              // Appel de votre fonction avec les valeurs récupérées
+              const postData = {
+                  dataset: dataset,
+                  nb_input: nbDonneeTest,
+                  seuil_poisoning: seuilEmpoisonnement
+              };
+
+              // Envoi des données avec AJAX
+              $.ajax({
+                  method: 'POST',
+                  headers: { 
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json' 
+                  },
+                  url: 'http://192.168.176.170:8000/test/',
+                  data: JSON.stringify(postData),
+                  dataType: 'json',
+                  success: function(response) {
+                      console.log(response);
+                      // Faire quelque chose avec les données de la réponse
+                      data = response;
+                  }, error: function(error) {
+                      return error;
+                  }
+              });
+          });
+
+          $.ajax({
+              url: 'http://192.168.176.170:8000/test/',
+              dataType: 'json',
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+              },
+              success: function(data) {
+                  // console.log(data);
+                  tableaux = data;
+                  console.log(tableaux)
+                  // Supposons que vos données soient un tableau d'objets, chaque objet représentant une ligne du tableau
+                  tableaux.forEach(function(item) {
+                    console.log(item);
+                      var row = $('<tr>');
+                      row.append('<td class="border-bottom-0"><h6 class="fw-semibold mb-0">' + item.id + '</h6></td>');
+                      row.append('<td class="border-bottom-0"><h6 class="fw-semibold mb-1">' + item.dataset + '</h6><span class="fw-normal"> seuil n = ' + item.seuil_poisoning + '</span></td>');
+                      row.append('<td class="border-bottom-0"><div class="d-flex align-items-center gap-2"><span class="badge bg-primary rounded-3 fw-semibold">' + item.certificat + '</span></div></td>');
+                      row.append('<td class="border-bottom-0"><div class="d-flex align-items-center gap-2"><span class="badge bg-danger rounded-3 fw-semibold">' + item.falsification + '</span></div></td>');
+                      row.append('<td class="border-bottom-0"><div class="d-flex align-items-center gap-2"><span class="badge text-bg-light rounded-3 fw-semibold">' + item.inconnu + '</span></div></td>');
+                      $('table').append(row);
+                  });
+              },
+              error: function(error) {
+                  console.log(error);
+              }
+          });
+          
+          // Trier les données par 'id' en ordre décroissant
+          data.sort(function(a, b) {
+              return b.id - a.id;
+          });
+
+          // callApiGet('http://192.168.176.170:8000/test/')
+          //     .then(responseData => {
+          //         console.log(responseData);
+          //         // Faire quelque chose avec les données de la réponse
+          //         tableaux = responseData;
+          //     })
+          //     .catch(error => {
+          //         console.error(error);
+          //         // Gérer l'erreur
+          //     });
+    });
+
+    // Exemple d'utilisation de la fonction d'appel API GET
+    // callApiGet('http://192.168.176.170:8000/test/')
+    //     .then(responseData => {
+    //         console.log(responseData);
+    //         // Faire quelque chose avec les données de la réponse
+    //     })
+    //     .catch(error => {
+    //         console.error(error);
+    //         // Gérer l'erreur
+    //     });
+  </script>
 </body>
 
 </html>
